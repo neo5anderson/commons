@@ -1,0 +1,42 @@
+#!/bin/bash
+#
+# 为当前目录的 html 生成索引
+# 
+
+if [ -e index.html ]; then
+    rm index.html
+fi
+
+cat > /tmp/header <<META_HEADER
+<!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content="Genindex, by Neo">
+    <title></title>
+</head>
+<body>
+    <ul>
+META_HEADER
+
+cat > /tmp/footer <<META_FOOTER
+    </ul>
+</body>
+</html>
+META_FOOTER
+
+cat /tmp/header > index.html
+for i in `ls *.html`; do
+    if [ $i != "index.html" ]; then
+	page=$i
+	page=${page/.html/}
+	echo "	<li><a href=\"$i\" target=\"_blank\">$page</a></li>" >> index.html
+	echo -n ". "
+    fi
+done
+cat /tmp/footer >> index.html
+
+rm /tmp/header /tmp/footer
+echo "."
+

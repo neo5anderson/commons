@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# cat > tmp <<XXX
+input=$1
+libpath=$2
+
+ifsbak=$IFS
+IFS=$'\n'
+tmpfile=/tmp/dumpso.`date +%s`.tmp
+
+awk '{printf("%s %s\n", $8, $7);}' $1 > $tmpfile
+
+for i in `cat $tmpfile`; do
+    target=$i
+    line=${target##* }
+    target=${target##*/}
+    target=${target% *}
+    arm-linux-androideabi-addr2line -f -C -s -e ${libpath}/${target} $line 2> /dev/null
+done
+
+IFS=$ifsbak
+
+rm -rf $tmpfile
+rm -rf $input
+

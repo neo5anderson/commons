@@ -1,0 +1,11 @@
+# compile
+*.o
+*.obj
+*.exe
+*.out
+cc/test
+
+# xcode
+commons/
+commons.xcodeproj
+

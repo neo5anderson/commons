@@ -1,0 +1,38 @@
+#!/usr/bin/python2.7
+#coding:utf-8
+
+import sys, urllib, urllib2, json
+
+baseurl = 'http://fanyi.youdao.com/translate?smartresult=dict&smartresult=rule&smartresult=ugc&sessionFrom=plugin&type=AUTO&doctype=json&xmlVersion=1.6&keyfrom=fanyi.web&ue=UTF-8&typoResult=true&i='
+
+if len(sys.argv) < 2:
+    print 'without args'
+    exit(-1)
+
+query = []
+for q in sys.argv[1:]:
+    # query.append(urllib.quote_plus(q))
+    query.append(q)
+
+post_url = 'http://fanyi.youdao.com/translate?smartresult=dict&smartresult=rule&smartresult=ugc&sessionFrom=null'
+
+post_data = {'type': 'AUTO', 'doctype': 'json', \
+        'xmlVersion': '1.8', 'keyfrom': 'fanyi.web', \
+        'ue': 'UTF-8', 'action': 'FY_BY_ENTER', \
+        'typoResult': 'true', 'i': ' '.join(query) }
+
+request = urllib2.Request(url = post_url, data = urllib.urlencode(post_data))
+# result = urllib.unquote_plus(urllib2.urlopen(request).read())
+result = urllib2.urlopen(request).read()
+json = json.loads(result)
+
+if json.has_key('translateResult'):
+    org = json['translateResult'][0][0]
+    print "%s => %s" % (org['src'], org['tgt'])
+
+if json.has_key('smartResult'):
+    item = json['smartResult']['entries']
+    print "\n".join(item[1:])
+
+print "delayed: %sms" % json['elapsedTime']
+

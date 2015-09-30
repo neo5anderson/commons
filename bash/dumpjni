@@ -1,0 +1,46 @@
+#!/bin/bash
+# 生成 Android NDK 接口
+#
+#   dumpjni path/to/jni.java
+#
+
+script_name=`basename $0`
+
+if [ ! -f "$1" ]; then
+    echo "usage: $script_name path/to/jni.java [cover]"
+    exit 1
+fi
+
+file=`basename $1`
+folder=`dirname $1`
+src_folder='java'
+
+package=`cat $1 | grep 'package\s\S.*;' | awk -F '[ ;]' '{print $2}'`
+project_folder=${folder}/../`echo $package | sed 's/[^.]*./\.\.\//g'`
+
+target=${package}.${file%.*}
+output=${target//./_}.h
+
+if [ -z $2 ]; then
+    if [ -f ${project_folder}/jni/${output} ]; then
+        echo "$output has already been here!"
+        exit 2
+    fi
+fi
+
+pushd $project_folder > /dev/null 2>&1
+
+if [ ! -d $src_folder ]; then
+    popd
+    echo "cannot find ${src_folder} folder!"
+    exit 2
+fi
+
+if [ -f AndroidManifest.xml ]; then
+    dumpmk jni slient
+fi
+
+cd $src_folder
+javah -jni -d ../jni -classpath . $target
+popd > /dev/null 2>&1
+

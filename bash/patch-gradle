@@ -1,0 +1,53 @@
+#!/bin/bash
+# 为 build.gradle 打 ndk 补丁
+#
+#   patch-ndk-gradle
+#
+
+script_name=`basename $0`
+
+target_file=app/build.gradle
+diff_file=/tmp/build.gradle.diff
+
+if [ ! -f ${target_file} ]; then
+    echo "run \`$script_name\` where ${target_file} lying"
+    exit 1
+fi
+
+cat > $diff_file <<DIFF_FILE
+diff --git a/app/build.gradle b/app/build.gradle
+--- a/app/build.gradle
++++ b/app/build.gradle
+@@ -17,6 +17,27 @@ android {
+             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+         }
+     }
++
++    sourceSets.main {
++        jni.srcDirs = []
++        jniLibs.srcDir 'src/main/libs'
++    }
++
++    task ndkBuild(type: Exec, description: 'Compile Native source') {
++        def ndkDir = "/opt/adt/ndk"
++        commandLine "\$ndkDir/ndk-build", '-C', file('src/main').absolutePath, 'all'
++    }
++
++    task ndkClean(type: Exec, description: 'Clean Native object files') {
++        def ndkDir = "/opt/adt/ndk"
++        commandLine "\$ndkDir/ndk-build", '-C', file('src/main').absolutePath, 'clean'
++    }
++
++    clean.dependsOn 'ndkClean'
++
++    tasks.withType(JavaCompile) {
++        compileTask -> compileTask.dependsOn ndkBuild
++    }
+ }
+ 
+ dependencies {
+DIFF_FILE
+
+patch $target_file $diff_file
+rm -f $diff_file
+

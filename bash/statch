@@ -1,0 +1,8 @@
+#!/bin/bash
+
+sum=`find . -name '*.[ch]*' | xargs cat | wc -l`
+pure=`find . -name '*.[ch]*' | xargs cat | grep -v ^$ | wc -l`
+percent=`echo "scale=2; ${pure}/${sum}" | bc -l`
+
+echo $pure / $sum = $percent
+

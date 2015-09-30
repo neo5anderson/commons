@@ -1,0 +1,50 @@
+MD = markdown2
+MDFLAGS = --extras footnotes,code-friendly,fenced-code-blocks,tables
+PREPARE = pygmentize -S default -f html
+RM = rm -rf
+ECHO = echo
+
+markdown_files = $(wildcard *.md)
+html_files = $(patsubst %.md,%.html,$(markdown_files))
+title = $(subst %.md,,$(markdown_files))
+
+all : html
+
+html : $(html_files)
+
+$(html_files) : %.html : %.md
+	@$(ECHO) 'table { border-spacing: 0px;border-collapse: collapse; }' > default.css
+	@$(ECHO) 'th, td { border: solid black 1px; }' >> default.css
+	@$(ECHO) '.MathJax span { color: black; }' >> default.css
+	@${PREPARE} >> default.css
+	@$(ECHO) '<!DOCTYPE HTML>' > $@
+	@$(ECHO) '<html lang="zh-CN">' >> $@
+	@$(ECHO) '<head>' >> $@
+	@$(ECHO) '	<meta charset="UTF-8">' >> $@
+	@$(ECHO) '	<title></title>' >> $@
+	@$(ECHO) '	<script type="text/x-mathjax-config">' >> $@
+	@$(ECHO) "MathJax.Hub.Config({tex2jax: {inlineMath: [['$$','$$'], [\"\\(\",\"\\)\"]], processEscapes: true}});" >> $@
+	@$(ECHO) '	</script>' >> $@
+	@$(ECHO) '	<script type="text/javascript" src="MathJax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>' >> $@
+	@$(ECHO) '	<link rel="stylesheet" href="default.css">' >> $@
+	@$(ECHO) '</head>' >> $@
+	@$(ECHO) '<body>' >> $@
+	@$(MD) $(MDFLAGS) $^ >> $@
+	@$(ECHO) '<script type="text/javascript">' >> $@
+	@$(ECHO) 'lists = document.getElementsByTagName("li"); for(var i = 0; i < lists.length; ++i) { hrefs = lists[i].getElementsByTagName("a"); for (var j = 0; j < hrefs.length; ++j) { hrefs[j].target = "_blank" } }' >> $@
+	@$(ECHO) '</script>' >> $@
+	@$(ECHO) '</body>' >> $@
+	@$(ECHO) '</html>' >> $@
+
+	@$(ECHO) 'done'
+
+.PHONY : clean all
+
+clean :
+	-$(RM) default.css
+	-$(RM) $(html_files)
+
+test:
+	@echo $(markdown_files)
+	@echo $(html_files)
+
