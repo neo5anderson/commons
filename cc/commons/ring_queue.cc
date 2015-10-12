@@ -41,7 +41,7 @@ RingQueue::RingQueue(int capacity, ring_queue_cb cb, void* user) {
         pthread_mutex_init(mutex_, nullptr);
 
         pdata_ = new void*[capacity_];
-        for (size_t i = 0; i < capacity_; ++i) {
+        for (int i = 0; i < capacity_; ++i) {
             pdata_[i] = nullptr;
         }
 
@@ -80,6 +80,16 @@ RingQueue::~RingQueue() {
         delete[] pdata_;
         pdata_ = nullptr;
     }
+}
+
+int RingQueue::left() {
+    int result = 0;
+
+    pthread_mutex_lock(mutex_);
+    result = offset_;
+    pthread_mutex_unlock(mutex_);
+
+    return result;
 }
 
 const void* RingQueue::head() {

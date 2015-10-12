@@ -21,19 +21,21 @@ class RingQueue {
    public:
     RingQueue(int capacity, ring_queue_cb cb, void* user);
     virtual ~RingQueue();
+    
+    int left();
 
     const void* head();
     const void* dequeue();
     bool enqueue(const void* data);
-
+    
    private:
     void* user_;
     ring_queue_cb cb_;
 
-    size_t head_;
-    size_t tail_;
-    size_t offset_;
-    size_t capacity_;
+    int head_;
+    int tail_;
+    int offset_;
+    int capacity_;
     pthread_mutex_t* mutex_;
 
     void** pdata_;

@@ -22,6 +22,7 @@ class PileBuffer {
 
     bool append(const void* data, size_t size,
                 const void* additional = nullptr);
+    void flush(const void* additional = nullptr);
 
    private:
     size_t capacity_;

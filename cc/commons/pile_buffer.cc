@@ -41,7 +41,6 @@ bool PileBuffer::append(const void* data, size_t size, const void* additional) {
 
     if (nullptr != cb_ && nullptr != data && size > 0) {
         size_t offset = 0;
-        uint8_t* next = nullptr;
 
         const uint8_t* pdata = reinterpret_cast<const uint8_t*>(data);
 
@@ -52,7 +51,7 @@ bool PileBuffer::append(const void* data, size_t size, const void* additional) {
             size -= left_;
 
             if (nullptr != cb_) {
-                next = reinterpret_cast<uint8_t*>(
+                uint8_t* next = reinterpret_cast<uint8_t*>(
                     cb_(user_, buffer_, capacity_, additional));
 
                 if (nullptr != next) {
@@ -80,5 +79,24 @@ bool PileBuffer::append(const void* data, size_t size, const void* additional) {
     }
 
     return result;
+}
+void PileBuffer::flush(const void* additional) {
+    pthread_mutex_lock(mutex_);
+
+    if (nullptr != cb_) {
+        uint8_t* next = reinterpret_cast<uint8_t*>(
+            cb_(user_, buffer_, capacity_, additional));
+
+        if (nullptr != next) {
+            if (false == is_buffer_from_outer) {
+                is_buffer_from_outer = true;
+                delete[] buffer_;
+            }
+
+            buffer_ = next;
+        }
+    }
+
+    pthread_mutex_unlock(mutex_);
 }
 } /* namespace: commons */
